@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GeriCare — Research Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://unpkg.com/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<style>
+  :root{
+    --bg:        #f6f8fa;
+    --paper:     #ffffff;
+    --ink:       #0f1a24;
+    --ink-2:     #3d4b58;
+    --muted:     #7a8896;
+    --hair:      #dfe6ee;
+    --blue:      #4a90c2;
+    --blue-soft: #dbeaf5;
+    --blue-deep: #1f4b6b;
+    --mint:      #52b39a;
+    --mint-soft: #d3ecdf;
+    --danger:    #d94a4a;
+    --serif: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+    --sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono: 'Geist Mono', 'SF Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html, body{background:var(--bg); color:var(--ink); font-family:var(--sans); font-weight:400; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;}
+  body{overflow-x:hidden;}
+  a{color:inherit;}
+
+  /* ===== TOP RULE / NAV ===== */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:18px 32px;
+    background:rgba(246,248,250,.82);
+    backdrop-filter:blur(14px) saturate(1.1);
+    -webkit-backdrop-filter:blur(14px) saturate(1.1);
+    border-bottom:1px solid var(--hair);
+    font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2);
+  }
+  .topbar .brand{display:flex; align-items:center; gap:10px; color:var(--ink);}
+  .topbar .brand .dot{width:8px; height:8px; border-radius:50%; background:var(--blue); box-shadow:0 0 0 3px var(--blue-soft);}
+  .topbar nav{display:flex; gap:22px;}
+  .topbar nav a{opacity:.7; transition:opacity .2s;}
+  .topbar nav a:hover{opacity:1;}
+  @media (max-width: 720px){ .topbar nav{display:none;} }
+
+  /* ===== HERO ===== */
+  .hero{
+    padding: 130px 32px 80px;
+    max-width: 1240px; margin:0 auto;
+    display:grid; grid-template-columns: 1.1fr 1fr; gap:60px; align-items:center;
+    min-height: 100vh;
+  }
+  @media (max-width: 900px){ .hero{grid-template-columns:1fr; gap:40px; padding-top:110px;} }
+
+  .hero .eyebrow{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--blue-deep);
+    display:inline-flex; align-items:center; gap:10px;
+    padding:6px 12px; background:var(--blue-soft); border-radius:2px;
+    margin-bottom:28px;
+  }
+  .hero .eyebrow::before{content:""; width:6px; height:6px; background:var(--blue-deep); border-radius:50%;}
+
+  .hero h1{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size: clamp(44px, 6vw, 84px);
+    line-height:.98; letter-spacing:-.02em;
+    color:var(--ink);
+    margin-bottom:24px;
+  }
+  .hero h1 em{ font-style:italic; color:var(--blue-deep); font-weight:300;}
+
+  .hero .lede{
+    font-family:var(--serif); font-weight:300;
+    font-size: clamp(17px, 1.4vw, 21px);
+    line-height:1.55; color:var(--ink-2);
+    max-width: 52ch;
+    margin-bottom:36px;
+    text-wrap:pretty;
+  }
+
+  .hero .meta{
+    display:grid; grid-template-columns: repeat(3, auto);
+    gap:32px;
+    padding-top:24px; border-top:1px solid var(--hair);
+    font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .hero .meta div span{display:block; color:var(--muted); margin-bottom:6px; font-size:10px;}
+  .hero .meta div strong{color:var(--ink); font-weight:500;}
+
+  .hero-visual{
+    position:relative;
+    aspect-ratio: 4/5;
+    background: linear-gradient(180deg, #ffffff 0%, #eef3f8 100%);
+    border-radius: 4px;
+    overflow:hidden;
+    box-shadow: 0 40px 80px -30px rgba(15,26,36,.18), 0 0 0 1px var(--hair);
+  }
+  .hero-visual img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    mix-blend-mode: multiply;
+    filter: contrast(1.02) saturate(.85);
+  }
+  .hero-visual .tag{
+    position:absolute; top:20px; left:20px;
+    font-family:var(--mono); font-size:10px; letter-spacing:.15em; text-transform:uppercase;
+    color:var(--ink-2); background:rgba(255,255,255,.85);
+    padding:6px 10px; border-radius:2px;
+    backdrop-filter: blur(4px);
+  }
+  .hero-visual .tag.br{top:auto; left:auto; bottom:20px; right:20px;}
+
+  .scroll-cue{
+    position:absolute; bottom:24px; left:50%; transform:translateX(-50%);
+    font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted);
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .scroll-cue .line{width:1px; height:32px; background:var(--muted); animation: pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.3; transform:scaleY(.6);} 50%{opacity:1; transform:scaleY(1);}}
+
+  /* ===== SECTION HEADER ===== */
+  .section-head{
+    max-width:1240px; margin:0 auto; padding: 100px 32px 40px;
+  }
+  .section-head .kicker{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--blue-deep);
+    margin-bottom:18px;
+  }
+  .section-head h2{
+    font-family:var(--serif); font-weight:400; font-size: clamp(34px, 4.4vw, 58px);
+    line-height:1.02; letter-spacing:-.015em; color:var(--ink);
+    max-width: 18ch;
+    margin-bottom:20px;
+  }
+  .section-head h2 em{font-style:italic; color:var(--blue-deep); font-weight:300;}
+  .section-head p{
+    font-family:var(--serif); font-weight:300; font-size: 19px; line-height:1.55; color:var(--ink-2);
+    max-width: 60ch; text-wrap:pretty;
+  }
+
+  /* ===== EXPLODED VIEW ===== */
+  .exploded-wrap{
+    position:relative;
+    height: 600vh; /* scroll runway */
+  }
+  .exploded-sticky{
+    position: sticky; top: 0; height: 100vh;
+    display:grid; grid-template-columns: 1fr 380px; gap:0;
+    background:
+      radial-gradient(1200px 700px at 30% 50%, #ffffff 0%, transparent 60%),
+      linear-gradient(180deg, #f6f8fa 0%, #eef3f8 100%);
+    overflow:hidden;
+  }
+  @media (max-width: 900px){
+    .exploded-sticky{grid-template-columns:1fr;}
+    .exploded-side{display:none;}
+  }
+
+  /* Grid backdrop */
+  .exploded-sticky::before{
+    content:""; position:absolute; inset:0;
+    background-image:
+      linear-gradient(to right, rgba(15,26,36,.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(15,26,36,.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at 30% 50%, black 0%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse at 30% 50%, black 0%, transparent 75%);
+    pointer-events:none;
+  }
+
+  .exploded-stage{
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .stack{
+    position:relative;
+    width: 340px; height: 340px;
+  }
+
+  /* Each component "slice" — will be translated by GSAP */
+  .comp{
+    position:absolute; left:50%; top:50%;
+    transform: translate(-50%, -50%);
+    display:flex; align-items:center; justify-content:center;
+    transition: filter .3s;
+  }
+  .comp svg{display:block; overflow:visible;}
+  .comp .label{
+    position:absolute;
+    font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink); background:var(--paper);
+    padding:6px 10px; border-radius:2px;
+    border:1px solid var(--hair);
+    white-space:nowrap;
+    opacity:0;
+    box-shadow: 0 8px 20px -8px rgba(15,26,36,.12);
+    pointer-events:none;
+  }
+  .comp .label::before{
+    content:""; position:absolute;
+    width:60px; height:1px; background:var(--ink-2);
+  }
+  .comp[data-side="right"] .label{ left: calc(100% + 80px); top:50%; transform:translateY(-50%); }
+  .comp[data-side="right"] .label::before{ right:100%; top:50%; }
+  .comp[data-side="left"]  .label{ right: calc(100% + 80px); top:50%; transform:translateY(-50%); text-align:right;}
+  .comp[data-side="left"]  .label::before{ left:100%; top:50%; }
+  .comp .label small{display:block; color:var(--muted); font-size:9px; letter-spacing:.1em; margin-top:3px; font-weight:400;}
+
+  /* Sidebar with details */
+  .exploded-side{
+    position:relative; z-index:2;
+    padding: 60px 40px;
+    background: var(--paper);
+    border-left:1px solid var(--hair);
+    display:flex; flex-direction:column; justify-content:center;
+    overflow:hidden;
+  }
+  .side-head{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted);
+    margin-bottom:20px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .side-head .count{color:var(--ink);}
+  .side-slides{position:relative; height:280px;}
+  .side-slide{
+    position:absolute; inset:0;
+    opacity:0; transform: translateY(10px);
+    transition: opacity .4s ease, transform .4s ease;
+  }
+  .side-slide.active{opacity:1; transform:translateY(0);}
+  .side-slide .num{
+    font-family:var(--mono); font-size:11px; letter-spacing:.14em; color:var(--blue-deep); margin-bottom:14px;
+  }
+  .side-slide h3{
+    font-family:var(--serif); font-weight:400; font-size:32px; line-height:1.05; letter-spacing:-.01em; color:var(--ink);
+    margin-bottom:16px;
+  }
+  .side-slide p{
+    font-family:var(--serif); font-weight:300; font-size:16px; line-height:1.55; color:var(--ink-2);
+    margin-bottom:20px; text-wrap:pretty;
+  }
+  .side-slide .specs{
+    display:grid; grid-template-columns: auto 1fr; gap: 6px 20px;
+    font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--ink-2);
+    padding-top:16px; border-top:1px solid var(--hair);
+  }
+  .side-slide .specs dt{color:var(--muted); text-transform:uppercase; font-size:10px; letter-spacing:.12em;}
+  .side-slide .specs dd{color:var(--ink);}
+
+  /* Progress rail */
+  .progress-rail{
+    position:absolute; right:20px; top:50%; transform:translateY(-50%);
+    display:flex; flex-direction:column; gap:12px; z-index:3;
+  }
+  .progress-rail .tick{
+    width:20px; height:2px; background:var(--hair); transition: all .3s;
+  }
+  .progress-rail .tick.active{background:var(--blue-deep); width:32px;}
+
+  /* ===== ABOUT / ABSTRACT ===== */
+  .abstract{
+    max-width:1240px; margin:0 auto; padding: 40px 32px 100px;
+    display:grid; grid-template-columns: 1fr 1.4fr; gap:80px;
+  }
+  @media (max-width: 900px){ .abstract{grid-template-columns:1fr; gap:40px;} }
+  .abstract .side{
+    font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted);
+    line-height:1.8;
+  }
+  .abstract .side .stat{
+    margin-top:32px; padding-top:24px; border-top:1px solid var(--hair);
+  }
+  .abstract .side .stat .n{
+    font-family:var(--serif); font-weight:300; font-size:56px; color:var(--ink); line-height:1;
+    margin-bottom:8px; letter-spacing:-.02em;
+  }
+  .abstract .body p{
+    font-family:var(--serif); font-weight:300; font-size:20px; line-height:1.6; color:var(--ink);
+    margin-bottom:24px; text-wrap:pretty;
+  }
+  .abstract .body p:first-child::first-letter{
+    font-size:76px; float:left; line-height:.85; padding: 6px 12px 0 0; font-weight:400; color:var(--blue-deep);
+  }
+  .abstract .body .compliance{
+    margin-top:36px; padding: 20px 24px; background:var(--blue-soft);
+    font-family:var(--sans); font-size:13px; line-height:1.6; color:var(--blue-deep);
+    border-radius:2px;
+  }
+  .abstract .body .compliance strong{font-weight:500;}
+
+  /* ===== FEATURES ===== */
+  .features-section{background: #0f1a24; color: #eef3f8;}
+  .features-section .section-head{padding-top:120px;}
+  .features-section .section-head .kicker{color:#7fb3d6;}
+  .features-section .section-head h2{color:#fff;}
+  .features-section .section-head h2 em{color:#9dc9e6;}
+  .features-section .section-head p{color:#a8b8c8;}
+
+  .features-grid{
+    max-width:1240px; margin:0 auto; padding: 40px 32px 120px;
+    display:grid; grid-template-columns: repeat(4, 1fr); gap:1px;
+    background:#1f2f3d;
+    border:1px solid #1f2f3d;
+  }
+  @media (max-width: 900px){ .features-grid{grid-template-columns: repeat(2, 1fr);} }
+  .feat{
+    background:#0f1a24;
+    padding: 40px 28px; min-height: 260px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    transition: background .3s;
+  }
+  .feat:hover{background:#152332;}
+  .feat .icon{
+    width:44px; height:44px; margin-bottom:24px;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid #2a3d4f; border-radius:50%;
+    color:#9dc9e6;
+  }
+  .feat h4{
+    font-family:var(--serif); font-weight:400; font-size:22px; line-height:1.15; color:#fff;
+    margin-bottom:8px; letter-spacing:-.005em;
+  }
+  .feat p{
+    font-family:var(--sans); font-weight:300; font-size:13px; line-height:1.55; color:#a8b8c8;
+  }
+  .feat .num{
+    font-family:var(--mono); font-size:10px; letter-spacing:.14em; color:#5a7085;
+    margin-top:20px;
+  }
+
+  /* ===== USERS ===== */
+  .users{
+    max-width:1240px; margin:0 auto; padding: 100px 32px;
+    display:grid; grid-template-columns: 1fr 1fr; gap: 60px;
+  }
+  @media (max-width: 900px){ .users{grid-template-columns:1fr;} }
+  .user-card{
+    padding: 40px 36px;
+    background:var(--paper); border:1px solid var(--hair);
+    border-radius:4px;
+    position:relative;
+  }
+  .user-card .role{
+    font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:24px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .user-card .role::before{content:""; width:24px; height:1px; background:var(--muted);}
+  .user-card h3{
+    font-family:var(--serif); font-weight:400; font-size:36px; line-height:1.05; letter-spacing:-.01em;
+    color:var(--ink); margin-bottom:16px;
+  }
+  .user-card p{
+    font-family:var(--serif); font-weight:300; font-size:16px; line-height:1.6; color:var(--ink-2);
+    margin-bottom:24px; text-wrap:pretty;
+  }
+  .user-card .attr{
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+    padding-top:24px; border-top:1px solid var(--hair);
+  }
+  .user-card .attr div .k{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:4px;}
+  .user-card .attr div .v{font-family:var(--sans); font-size:14px; color:var(--ink); font-weight:400;}
+  .user-card.primary{background:var(--blue-deep); color:#eef3f8; border-color:var(--blue-deep);}
+  .user-card.primary h3{color:#fff;}
+  .user-card.primary p{color:#c8dae8;}
+  .user-card.primary .role{color:#9dc9e6;}
+  .user-card.primary .role::before{background:#9dc9e6;}
+  .user-card.primary .attr{border-top-color:#2a5578;}
+  .user-card.primary .attr div .k{color:#7a97ae;}
+  .user-card.primary .attr div .v{color:#fff;}
+
+  /* ===== FOOTER ===== */
+  footer{
+    border-top:1px solid var(--hair);
+    padding: 60px 32px 40px;
+    background:var(--bg);
+  }
+  .foot-inner{
+    max-width:1240px; margin:0 auto;
+    display:grid; grid-template-columns: 2fr 1fr 1fr; gap:60px;
+  }
+  @media (max-width: 720px){ .foot-inner{grid-template-columns:1fr; gap:32px;} }
+  footer h5{
+    font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
+    margin-bottom:14px;
+  }
+  footer .brand-block h4{
+    font-family:var(--serif); font-weight:400; font-size:28px; color:var(--ink); margin-bottom:8px; letter-spacing:-.01em;
+  }
+  footer .brand-block p{
+    font-family:var(--serif); font-weight:300; font-size:15px; color:var(--ink-2); line-height:1.55; max-width:44ch;
+  }
+  footer ul{list-style:none;}
+  footer ul li{font-family:var(--sans); font-size:13px; color:var(--ink-2); line-height:1.9;}
+  .foot-bar{
+    max-width:1240px; margin: 40px auto 0;
+    padding-top:24px; border-top:1px solid var(--hair);
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted);
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<div class="topbar">
+  <div class="brand"><span class="dot"></span> GeriCare · SINAG: ApriCari</div>
+  <nav>
+    <a href="#prototype">Prototype</a>
+    <a href="#abstract">Research</a>
+    <a href="#features">Capabilities</a>
+    <a href="#users">Users</a>
+  </nav>
+  <div style="font-size:10px;">Cebu City · MMXXVI</div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div>
+    <div class="eyebrow">Research Prototype · v0.1</div>
+    <h1>A quiet wristband<br/>for the <em>caregivers</em><br/>who never sit down.</h1>
+    <p class="lede">
+      GeriCare is a standalone 4G LTE–enabled smart wristband for periodic vital signs monitoring of geriatric patients under the care of licensed caregivers in Home for the Aged institutions in Cebu City.
+    </p>
+    <div class="meta">
+      <div><span>Study</span><strong>Grade 12 · SHS</strong></div>
+      <div><span>Location</span><strong>Cebu City, PH</strong></div>
+      <div><span>Status</span><strong>Feasibility</strong></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <span class="tag">Fig. 01 — Working Prototype</span>
+    <img src="assets/prototype-reference.jpg" alt="GeriCare prototype, 3D-printed enclosure with woven strap" />
+    <span class="tag br">3D-printed · PLA</span>
+    <div class="scroll-cue"><span>Scroll to disassemble</span><span class="line"></span></div>
+  </div>
+</section>
+
+<!-- ===== EXPLODED VIEW ===== -->
+<div class="section-head" id="prototype">
+  <div class="kicker">Fig. 02 — Exploded Assembly</div>
+  <h2>Eight parts, <em>one wristband.</em></h2>
+  <p>Scroll down to disassemble the device. Each layer separates in the order it is stacked inside the enclosure — from the outer casing down to the silicone strap that sits against the patient's skin.</p>
+</div>
+
+<div class="exploded-wrap" id="exploded">
+  <div class="exploded-sticky">
+
+    <!-- Progress rail -->
+    <div class="progress-rail" id="rail">
+      <div class="tick active"></div>
+      <div class="tick"></div>
+      <div class="tick"></div>
+      <div class="tick"></div>
+      <div class="tick"></div>
+      <div class="tick"></div>
+      <div class="tick"></div>
+      <div class="tick"></div>
+    </div>
+
+    <div class="exploded-stage">
+      <div class="stack" id="stack">
+
+        <!-- 1. TOP CASING (hexagonal, white, with OLED + SOS) -->
+        <div class="comp" data-comp="0" data-side="right" style="z-index:70;">
+          <svg width="220" height="220" viewBox="-110 -110 220 220">
+            <defs>
+              <linearGradient id="caseG" x1="0" y1="-1" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e8eef4"/>
+              </linearGradient>
+            </defs>
+            <!-- hexagonal top casing -->
+            <polygon points="0,-88 76,-44 76,44 0,88 -76,44 -76,-44"
+                     fill="url(#caseG)" stroke="#c6d1dd" stroke-width="1.5"/>
+            <polygon points="0,-72 62,-36 62,36 0,72 -62,36 -62,-36"
+                     fill="none" stroke="#dbe4ed" stroke-width="1"/>
+            <!-- OLED display -->
+            <circle cx="0" cy="0" r="34" fill="#0f1a24" stroke="#2a3d4f" stroke-width="1"/>
+            <path d="M -22 0 L -14 0 L -8 -12 L 0 12 L 8 -8 L 14 0 L 22 0" stroke="#52b39a" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="0" y="24" text-anchor="middle" font-family="Geist Mono, monospace" font-size="7" fill="#7fb3d6" letter-spacing="1">72 BPM</text>
+            <!-- SOS button -->
+            <circle cx="76" cy="0" r="7" fill="#d94a4a" stroke="#8a2828" stroke-width="1"/>
+            <circle cx="76" cy="0" r="3" fill="#f28080"/>
+          </svg>
+          <div class="label">Top Casing<small>3D-printed PLA · hex form</small></div>
+        </div>
+
+        <!-- 2. OLED + button plate (separates from casing) -->
+        <div class="comp" data-comp="1" data-side="left" style="z-index:65;">
+          <svg width="180" height="120" viewBox="-90 -60 180 120">
+            <rect x="-70" y="-40" width="140" height="80" rx="4" fill="#f6f8fa" stroke="#c6d1dd" stroke-width="1.2"/>
+            <circle cx="-30" cy="0" r="26" fill="#0f1a24" stroke="#2a3d4f"/>
+            <path d="M -46 0 L -40 0 L -34 -10 L -30 8 L -24 -6 L -18 0 L -14 0" stroke="#52b39a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+            <rect x="24" y="-12" width="36" height="24" rx="2" fill="#eef3f8" stroke="#c6d1dd"/>
+            <circle cx="42" cy="0" r="6" fill="#d94a4a" stroke="#8a2828"/>
+            <text x="42" y="22" text-anchor="middle" font-family="Geist Mono, monospace" font-size="6" fill="#7a8896" letter-spacing=".5">SOS</text>
+          </svg>
+          <div class="label">OLED + SOS Plate<small>0.96″ display · panic switch</small></div>
+        </div>
+
+        <!-- 3. ESP32 MICROCONTROLLER (green PCB) -->
+        <div class="comp" data-comp="2" data-side="right" style="z-index:60;">
+          <svg width="200" height="130" viewBox="-100 -65 200 130">
+            <rect x="-90" y="-55" width="180" height="110" rx="3" fill="#1f6b4a" stroke="#0f4a30" stroke-width="1"/>
+            <!-- silkscreen traces -->
+            <path d="M -70 -30 H 70 M -70 -10 H 40 M -70 10 H 50 M -70 30 H 70" stroke="#2e8a5e" stroke-width=".8" opacity=".7"/>
+            <!-- wifi module -->
+            <rect x="-40" y="-38" width="60" height="30" fill="#c6ccd1" stroke="#8a929a"/>
+            <rect x="-38" y="-36" width="56" height="26" fill="none" stroke="#a8b0b8" stroke-dasharray="2 1.5"/>
+            <text x="-10" y="-20" text-anchor="middle" font-family="Geist Mono, monospace" font-size="7" fill="#4a5058">ESP32</text>
+            <!-- capacitors / components -->
+            <rect x="30" y="-38" width="10" height="6" fill="#3a2a1a"/>
+            <rect x="45" y="-38" width="10" height="6" fill="#3a2a1a"/>
+            <circle cx="60" cy="-30" r="4" fill="#c0a060" stroke="#8a7040"/>
+            <rect x="30" y="20" width="14" height="8" fill="#1a1a1a"/>
+            <rect x="48" y="20" width="14" height="8" fill="#1a1a1a"/>
+            <!-- pins -->
+            <g fill="#e0c060">
+              <rect x="-88" y="-48" width="4" height="2"/>
+              <rect x="-88" y="-40" width="4" height="2"/>
+              <rect x="-88" y="-32" width="4" height="2"/>
+              <rect x="-88" y="-24" width="4" height="2"/>
+              <rect x="-88" y="-16" width="4" height="2"/>
+              <rect x="-88" y="-8" width="4" height="2"/>
+              <rect x="-88" y="0" width="4" height="2"/>
+              <rect x="-88" y="8" width="4" height="2"/>
+              <rect x="-88" y="16" width="4" height="2"/>
+              <rect x="-88" y="24" width="4" height="2"/>
+              <rect x="84" y="-48" width="4" height="2"/>
+              <rect x="84" y="-40" width="4" height="2"/>
+              <rect x="84" y="-32" width="4" height="2"/>
+              <rect x="84" y="-24" width="4" height="2"/>
+              <rect x="84" y="-16" width="4" height="2"/>
+              <rect x="84" y="-8" width="4" height="2"/>
+              <rect x="84" y="0" width="4" height="2"/>
+              <rect x="84" y="8" width="4" height="2"/>
+              <rect x="84" y="16" width="4" height="2"/>
+              <rect x="84" y="24" width="4" height="2"/>
+            </g>
+            <!-- micro USB -->
+            <rect x="-90" y="38" width="18" height="10" fill="#8a929a" stroke="#5a6068"/>
+          </svg>
+          <div class="label">ESP32 Microcontroller<small>Wi-Fi + BLE · dual-core</small></div>
+        </div>
+
+        <!-- 4. MAX30102 PULSE SENSOR -->
+        <div class="comp" data-comp="3" data-side="left" style="z-index:55;">
+          <svg width="140" height="90" viewBox="-70 -45 140 90">
+            <rect x="-52" y="-32" width="104" height="64" rx="3" fill="#4a2a6b" stroke="#2a1440"/>
+            <rect x="-14" y="-14" width="28" height="20" rx="2" fill="#0a0a0a" stroke="#2a2a2a"/>
+            <circle cx="0" cy="-4" r="4" fill="#d94a4a" opacity=".9"/>
+            <circle cx="0" cy="-4" r="8" fill="#d94a4a" opacity=".25"/>
+            <circle cx="0" cy="-4" r="14" fill="#d94a4a" opacity=".08"/>
+            <text x="0" y="16" text-anchor="middle" font-family="Geist Mono, monospace" font-size="6" fill="#c8b0e0">MAX30102</text>
+            <g fill="#e0c060">
+              <rect x="-50" y="-30" width="3" height="2"/>
+              <rect x="-50" y="-24" width="3" height="2"/>
+              <rect x="-50" y="-18" width="3" height="2"/>
+              <rect x="-50" y="-12" width="3" height="2"/>
+              <rect x="-50" y="18" width="3" height="2"/>
+              <rect x="-50" y="24" width="3" height="2"/>
+              <rect x="47" y="-30" width="3" height="2"/>
+              <rect x="47" y="-24" width="3" height="2"/>
+              <rect x="47" y="18" width="3" height="2"/>
+              <rect x="47" y="24" width="3" height="2"/>
+            </g>
+          </svg>
+          <div class="label">MAX30102 Sensor<small>Pulse · SpO₂ · red LED</small></div>
+        </div>
+
+        <!-- 5. TEMPERATURE SENSOR -->
+        <div class="comp" data-comp="4" data-side="right" style="z-index:50;">
+          <svg width="120" height="90" viewBox="-60 -45 120 90">
+            <rect x="-40" y="-30" width="80" height="60" rx="3" fill="#1f4b6b" stroke="#0f2a40"/>
+            <circle cx="0" cy="0" r="16" fill="#d0d5da" stroke="#8a929a" stroke-width="1.2"/>
+            <circle cx="0" cy="0" r="10" fill="#4a5058" stroke="#2a2f34"/>
+            <circle cx="0" cy="0" r="5" fill="#0a0a0a"/>
+            <circle cx="-1.5" cy="-1.5" r="1.5" fill="#3a4048"/>
+            <text x="0" y="26" text-anchor="middle" font-family="Geist Mono, monospace" font-size="5" fill="#9dc9e6">MLX90614</text>
+            <g fill="#e0c060">
+              <rect x="-38" y="-20" width="3" height="2"/>
+              <rect x="-38" y="-14" width="3" height="2"/>
+              <rect x="-38" y="12" width="3" height="2"/>
+              <rect x="-38" y="18" width="3" height="2"/>
+              <rect x="35" y="-20" width="3" height="2"/>
+              <rect x="35" y="-14" width="3" height="2"/>
+              <rect x="35" y="12" width="3" height="2"/>
+              <rect x="35" y="18" width="3" height="2"/>
+            </g>
+          </svg>
+          <div class="label">IR Thermometer<small>Non-contact · ±0.5 °C</small></div>
+        </div>
+
+        <!-- 6. 4G LTE MODULE -->
+        <div class="comp" data-comp="5" data-side="left" style="z-index:45;">
+          <svg width="200" height="120" viewBox="-100 -60 200 120">
+            <rect x="-90" y="-50" width="180" height="100" rx="3" fill="#1a4a5a" stroke="#0a2a38"/>
+            <!-- shield can -->
+            <rect x="-50" y="-30" width="100" height="60" rx="1" fill="#c6ccd1" stroke="#8a929a"/>
+            <rect x="-48" y="-28" width="96" height="56" rx="1" fill="none" stroke="#a8b0b8" stroke-dasharray="1.5 1.5"/>
+            <text x="0" y="4" text-anchor="middle" font-family="Geist Mono, monospace" font-size="9" fill="#3a4048" letter-spacing="1">SIM7600</text>
+            <text x="0" y="14" text-anchor="middle" font-family="Geist Mono, monospace" font-size="5" fill="#5a6068">4G LTE</text>
+            <!-- nano-SIM slot -->
+            <rect x="-72" y="30" width="30" height="14" rx="1" fill="#0a0a0a" stroke="#3a4048"/>
+            <text x="-57" y="40" text-anchor="middle" font-family="Geist Mono, monospace" font-size="4" fill="#7a8896">SIM</text>
+            <!-- castellated pins around perimeter -->
+            <g fill="#e0c060">
+              <circle cx="-84" cy="-42" r="1.5"/><circle cx="-84" cy="-34" r="1.5"/><circle cx="-84" cy="-26" r="1.5"/><circle cx="-84" cy="-18" r="1.5"/><circle cx="-84" cy="-10" r="1.5"/><circle cx="-84" cy="-2" r="1.5"/><circle cx="-84" cy="6" r="1.5"/><circle cx="-84" cy="14" r="1.5"/><circle cx="-84" cy="22" r="1.5"/>
+              <circle cx="84" cy="-42" r="1.5"/><circle cx="84" cy="-34" r="1.5"/><circle cx="84" cy="-26" r="1.5"/><circle cx="84" cy="-18" r="1.5"/><circle cx="84" cy="-10" r="1.5"/><circle cx="84" cy="-2" r="1.5"/><circle cx="84" cy="6" r="1.5"/><circle cx="84" cy="14" r="1.5"/><circle cx="84" cy="22" r="1.5"/>
+            </g>
+          </svg>
+          <div class="label">4G LTE Modem<small>Standalone · SIM-enabled</small></div>
+        </div>
+
+        <!-- 7. BATTERY + TP4056 -->
+        <div class="comp" data-comp="6" data-side="right" style="z-index:40;">
+          <svg width="220" height="100" viewBox="-110 -50 220 100">
+            <!-- LiPo pouch -->
+            <rect x="-100" y="-32" width="140" height="64" rx="4" fill="#e0e5eb" stroke="#a8b0b8" stroke-width="1.2"/>
+            <rect x="-96" y="-28" width="132" height="56" rx="2" fill="none" stroke="#c6ccd1"/>
+            <text x="-30" y="-8" text-anchor="middle" font-family="Geist Mono, monospace" font-size="7" fill="#5a6068">1000 mAh</text>
+            <text x="-30" y="4" text-anchor="middle" font-family="Geist Mono, monospace" font-size="6" fill="#7a8896">3.7 V · Li-Po</text>
+            <!-- tabs -->
+            <rect x="40" y="-16" width="6" height="6" fill="#e0c060"/>
+            <rect x="40" y="10" width="6" height="6" fill="#c6ccd1"/>
+            <!-- wires -->
+            <path d="M 46 -13 Q 58 -13 58 -8 L 58 -6" stroke="#d94a4a" stroke-width="2" fill="none"/>
+            <path d="M 46 13 Q 58 13 58 8 L 58 6" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+            <!-- TP4056 board -->
+            <rect x="58" y="-14" width="42" height="28" rx="2" fill="#a03030" stroke="#601818"/>
+            <rect x="76" y="-10" width="16" height="8" rx="1" fill="#c6ccd1" stroke="#8a929a"/>
+            <circle cx="66" cy="8" r="1.5" fill="#e0c060"/>
+            <circle cx="72" cy="8" r="1.5" fill="#52b39a"/>
+            <text x="79" y="12" font-family="Geist Mono, monospace" font-size="4" fill="#e8b0b0">TP4056</text>
+          </svg>
+          <div class="label">Battery + Charger<small>1000 mAh LiPo · TP4056</small></div>
+        </div>
+
+        <!-- 8. STRAP -->
+        <div class="comp" data-comp="7" data-side="left" style="z-index:35;">
+          <svg width="320" height="80" viewBox="-160 -40 320 80">
+            <path d="M -150 -14 Q -80 -20 -30 -14 L 30 -14 Q 80 -20 150 -14 L 150 14 Q 80 20 30 14 L -30 14 Q -80 20 -150 14 Z"
+                  fill="#eef3f8" stroke="#c6d1dd" stroke-width="1.2"/>
+            <!-- perforations -->
+            <g fill="#c6d1dd">
+              <circle cx="-100" cy="0" r="2"/><circle cx="-80" cy="0" r="2"/><circle cx="-60" cy="0" r="2"/>
+              <circle cx="60" cy="0" r="2"/><circle cx="80" cy="0" r="2"/><circle cx="100" cy="0" r="2"/>
+            </g>
+            <!-- buckle -->
+            <rect x="-30" y="-16" width="60" height="32" rx="3" fill="#f6f8fa" stroke="#a8b0b8"/>
+            <rect x="-24" y="-10" width="48" height="20" rx="2" fill="none" stroke="#c6d1dd"/>
+            <rect x="-2" y="-12" width="4" height="24" fill="#a8b0b8"/>
+          </svg>
+          <div class="label">Silicone Strap<small>Medical-grade · adjustable</small></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right sidebar -->
+    <aside class="exploded-side">
+      <div class="side-head">
+        <span>Component Detail</span>
+        <span class="count"><span id="cur">01</span> / 08</span>
+      </div>
+      <div class="side-slides" id="slides">
+        <div class="side-slide active" data-slide="0">
+          <div class="num">01 · Enclosure</div>
+          <h3>The outer casing.</h3>
+          <p>A 3D-printed PLA housing shapes the wristband and protects the internal electronics from bumps, sweat, and daily wear inside the aged-care facility.</p>
+          <dl class="specs">
+            <dt>Material</dt><dd>PLA · 3D-printed</dd>
+            <dt>Form</dt><dd>Hexagonal top</dd>
+            <dt>Openings</dt><dd>USB-C · SOS</dd>
+          </dl>
+        </div>
+        <div class="side-slide" data-slide="1">
+          <div class="num">02 · Interface</div>
+          <h3>Display & SOS.</h3>
+          <p>A 0.96″ OLED shows the most recent vitals reading at a glance; a recessed red SOS button lets the patient or caregiver flag an emergency instantly.</p>
+          <dl class="specs">
+            <dt>Display</dt><dd>0.96″ OLED · monochrome</dd>
+            <dt>Input</dt><dd>Tactile SOS switch</dd>
+            <dt>Feedback</dt><dd>Haptic pulse</dd>
+          </dl>
+        </div>
+        <div class="side-slide" data-slide="2">
+          <div class="num">03 · Compute</div>
+          <h3>ESP32 microcontroller.</h3>
+          <p>A dual-core ESP32 orchestrates every sensor reading, timestamp, and transmission — small enough to sit inside the enclosure, powerful enough to run periodic monitoring on its own.</p>
+          <dl class="specs">
+            <dt>MCU</dt><dd>ESP32 · dual-core 240 MHz</dd>
+            <dt>Radio</dt><dd>Wi-Fi · BLE 4.2</dd>
+            <dt>Power</dt><dd>3.3 V logic</dd>
+          </dl>
+        </div>
+        <div class="side-slide" data-slide="3">
+          <div class="num">04 · Pulse & SpO₂</div>
+          <h3>MAX30102 sensor.</h3>
+          <p>An optical pulse-oximeter reads heart rate and blood oxygen saturation through the skin using a faint red LED — the same technique used in clinical fingertip monitors.</p>
+          <dl class="specs">
+            <dt>Reads</dt><dd>Heart rate · SpO₂</dd>
+            <dt>Method</dt><dd>Photoplethysmography</dd>
+            <dt>Interface</dt><dd>I²C</dd>
+          </dl>
+        </div>
+        <div class="side-slide" data-slide="4">
+          <div class="num">05 · Temperature</div>
+          <h3>IR thermometer.</h3>
+          <p>A non-contact infrared sensor reads body temperature from the underside of the wrist, taking a periodic sample without disturbing the patient.</p>
+          <dl class="specs">
+            <dt>Sensor</dt><dd>MLX90614 · IR</dd>
+            <dt>Accuracy</dt><dd>±0.5 °C (medical)</dd>
+            <dt>Range</dt><dd>−40 to 125 °C</dd>
+          </dl>
+        </div>
+        <div class="side-slide" data-slide="5">
+          <div class="num">06 · Connectivity</div>
+          <h3>4G LTE modem.</h3>
+          <p>A cellular modem makes GeriCare <em>standalone</em> — it transmits readings and alerts over the mobile network with no phone, no Wi-Fi router, and no bridge device required.</p>
+          <dl class="specs">
+            <dt>Module</dt><dd>SIM7600 · 4G LTE</dd>
+            <dt>SIM</dt><dd>Nano-SIM · Cat.1</dd>
+            <dt>Bands</dt><dd>PH: B1 · B3 · B5 · B41</dd>
+          </dl>
+        </div>
+        <div class="side-slide" data-slide="6">
+          <div class="num">07 · Power</div>
+          <h3>Battery + charger.</h3>
+          <p>A 1000 mAh lithium-polymer cell — managed by a TP4056 charging chip — powers the wristband through a full day of periodic monitoring before it needs a top-up over USB-C.</p>
+          <dl class="specs">
+            <dt>Battery</dt><dd>1000 mAh · 3.7 V LiPo</dd>
+            <dt>Charger</dt><dd>TP4056 · USB-C</dd>
+            <dt>Runtime</dt><dd>~24 h typical use</dd>
+          </dl>
+        </div>
+        <div class="side-slide" data-slide="7">
+          <div class="num">08 · Skin Contact</div>
+          <h3>Silicone strap.</h3>
+          <p>A medical-grade silicone band with subtle perforations and a brushed metal buckle secures the wristband against the patient's wrist — soft, breathable, and easily wiped down between shifts.</p>
+          <dl class="specs">
+            <dt>Material</dt><dd>Medical-grade silicone</dd>
+            <dt>Fit</dt><dd>Adjustable · pin buckle</dd>
+            <dt>Care</dt><dd>Wipe-clean</dd>
+          </dl>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- ===== ABOUT / ABSTRACT ===== -->
+<div class="section-head" id="abstract">
+  <div class="kicker">§ Abstract</div>
+  <h2>On caregiving, <em>quietly measured.</em></h2>
+</div>
+<section class="abstract">
+  <div class="side">
+    On the study<br/>
+    Grade 12 Research<br/>
+    SINAG: ApriCari<br/><br/>
+    Setting<br/>
+    Home for the Aged<br/>
+    institutions · Cebu City
+    <div class="stat">
+      <div class="n">R.A. 10173</div>
+      <div>Data Privacy Act of 2012<br/>governs all responses collected.</div>
+    </div>
+  </div>
+  <div class="body">
+    <p>The study proposes GeriCare, a standalone 4G LTE–enabled smart wristband designed for the periodic monitoring of vital signs in geriatric patients under the care of licensed caregivers in Home for the Aged institutions in Cebu City.</p>
+    <p>It seeks to understand the experiences and challenges faced by caregivers in manually monitoring the vital signs of geriatric patients — particularly in relation to caregiver workload, missed or delayed monitoring, patient safety, and the need for automated monitoring.</p>
+    <p>We invite qualified licensed caregivers who have experience caring for geriatric patients and monitoring their vital signs to participate. Honest and unbiased responses will help the researchers assess the potential usefulness and feasibility of the proposed GeriCare Smart Wristband.</p>
+    <div class="compliance">
+      <strong>Participation is voluntary.</strong> You may choose not to participate or withdraw at any time. In accordance with Republic Act No. 10173 (Data Privacy Act of 2012), all information and responses are treated with confidentiality and used solely for academic and research purposes.
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="features-section" id="features">
+  <div class="section-head">
+    <div class="kicker">§ Capabilities</div>
+    <h2>What the wristband <em>reads.</em></h2>
+    <p>Four vital signs and one panic input — measured on a schedule the caregiver sets, transmitted over cellular the moment they are captured.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feat">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>
+      </div>
+      <div>
+        <h4>Heart rate</h4>
+        <p>Continuous PPG sampling via the MAX30102 optical sensor pressed against the underside of the wrist.</p>
+      </div>
+      <div class="num">01 / bpm</div>
+    </div>
+    <div class="feat">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c4 5 6 8 6 12a6 6 0 0 1-12 0c0-4 2-7 6-12Z"/></svg>
+      </div>
+      <div>
+        <h4>Blood oxygen</h4>
+        <p>SpO₂ derived from red / infrared light absorption — the same principle as clinical fingertip pulse oximeters.</p>
+      </div>
+      <div class="num">02 / %</div>
+    </div>
+    <div class="feat">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13V5a2 2 0 0 1 4 0v8"/><circle cx="12" cy="17" r="4"/></svg>
+      </div>
+      <div>
+        <h4>Body temperature</h4>
+        <p>Non-contact infrared reads skin temperature at set intervals — no disruption to sleep or rest.</p>
+      </div>
+      <div class="num">03 / °C</div>
+    </div>
+    <div class="feat">
+      <div class="icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+      </div>
+      <div>
+        <h4>4G LTE uplink</h4>
+        <p>Every reading is transmitted over cellular directly — the wristband works without Wi-Fi or a paired phone.</p>
+      </div>
+      <div class="num">04 / net</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== USERS ===== -->
+<div class="section-head" id="users">
+  <div class="kicker">§ Target Users</div>
+  <h2>Two hands, <em>one wrist.</em></h2>
+  <p>GeriCare is designed for two people at once — the licensed caregiver who monitors, and the geriatric patient who is monitored.</p>
+</div>
+<section class="users">
+  <div class="user-card primary">
+    <div class="role">Primary Operator</div>
+    <h3>The licensed caregiver.</h3>
+    <p>Caregivers in Home for the Aged institutions often monitor many residents at once. GeriCare reduces manual rounds, minimizes missed readings, and surfaces alerts the moment a vital falls out of range.</p>
+    <div class="attr">
+      <div><div class="k">Workload</div><div class="v">Reduced manual rounds</div></div>
+      <div><div class="k">Alerts</div><div class="v">Push to caregiver device</div></div>
+      <div><div class="k">Setting</div><div class="v">Home for the Aged</div></div>
+      <div><div class="k">Location</div><div class="v">Cebu City, PH</div></div>
+    </div>
+  </div>
+  <div class="user-card">
+    <div class="role">Wearer</div>
+    <h3>The geriatric patient.</h3>
+    <p>The wristband is worn continuously, unobtrusive against the skin. A single red button lets the wearer call for help; the rest happens quietly in the background, on a schedule the caregiver defines.</p>
+    <div class="attr">
+      <div><div class="k">Form</div><div class="v">Wrist-worn, silicone</div></div>
+      <div><div class="k">Interaction</div><div class="v">One SOS button</div></div>
+      <div><div class="k">Comfort</div><div class="v">Medical-grade skin contact</div></div>
+      <div><div class="k">Autonomy</div><div class="v">Standalone — no phone</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="foot-inner">
+    <div class="brand-block">
+      <h5>Research group</h5>
+      <h4>SINAG: ApriCari</h4>
+      <p>Grade 12 Senior High School researchers proposing GeriCare — a standalone 4G LTE–enabled smart wristband for periodic vital-signs monitoring in geriatric care.</p>
+    </div>
+    <div>
+      <h5>Study</h5>
+      <ul>
+        <li>Prototype v0.1</li>
+        <li>Feasibility study</li>
+        <li>Cebu City, PH</li>
+        <li>MMXXVI</li>
+      </ul>
+    </div>
+    <div>
+      <h5>Compliance</h5>
+      <ul>
+        <li>R.A. 10173 · Data Privacy</li>
+        <li>Voluntary participation</li>
+        <li>Academic use only</li>
+        <li>Confidentiality preserved</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bar">
+    <div>© SINAG: ApriCari · GeriCare</div>
+    <div>Fig. 02 / Exploded Assembly</div>
+  </div>
+</footer>
+
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  // === EXPLODED VIEW SCROLL ANIMATION ===
+  // Each component has a target (dx, dy, rotate). Start stacked at center, fly out along scroll.
+  const comps = [
+    { dx:    0, dy: -420, r:  0 }, // 0 top casing -> up
+    { dx:  -60, dy: -300, r: -6 }, // 1 OLED plate -> up-left
+    { dx:  260, dy: -180, r:  8 }, // 2 ESP32 -> upper right
+    { dx: -320, dy: -100, r: -4 }, // 3 pulse sensor -> mid-left
+    { dx:  330, dy:   40, r:  6 }, // 4 temp sensor -> mid-right
+    { dx: -260, dy:  160, r: -6 }, // 5 LTE -> lower left
+    { dx:  100, dy:  280, r:  4 }, // 6 battery -> lower right
+    { dx:  -40, dy:  400, r:  0 }, // 7 strap -> bottom
+  ];
+
+  // Set initial stacked state (all at center, slightly z-offset visually via scale)
+  gsap.utils.toArray('.comp').forEach((el, i) => {
+    gsap.set(el, { x: 0, y: 0, rotate: 0, scale: 1 - i*0.01, opacity: 1 });
+  });
+
+  const stack = document.getElementById('stack');
+  const rail  = document.getElementById('rail').querySelectorAll('.tick');
+  const slides= document.querySelectorAll('.side-slide');
+  const curEl = document.getElementById('cur');
+
+  function setActive(i){
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+    rail.forEach((t, idx) => t.classList.toggle('active', idx === i));
+    curEl.textContent = String(i+1).padStart(2, '0');
+  }
+
+  // Build a timeline that separates components progressively across scroll
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#exploded',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 0.8,
+      onUpdate: (self) => {
+        // 8 side slides — map progress 0..1 to 0..7
+        const idx = Math.min(7, Math.floor(self.progress * 7.999));
+        setActive(idx);
+      }
+    }
+  });
+
+  comps.forEach((c, i) => {
+    // stagger the separation across the scroll runway
+    tl.to(`.comp[data-comp="${i}"]`, {
+      x: c.dx, y: c.dy, rotate: c.r,
+      duration: 1, ease: 'power2.out'
+    }, i * 0.6);
+    tl.to(`.comp[data-comp="${i}"] .label`, {
+      opacity: 1, duration: 0.4
+    }, i * 0.6 + 0.4);
+  });
+
+  // Refresh on resize
+  window.addEventListener('resize', () => ScrollTrigger.refresh());
+</script>
+
+</body>
+</html>
